@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>撮影料金 自動見積もり | CREEM Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:           #f9f7f4;
+  --bg-card:      #ffffff;
+  --border:       #e5e0d8;
+  --border-h:     #c8bfb0;
+  --text:         #1a1714;
+  --text-s:       #6b6259;
+  --text-h:       #9e958c;
+  --accent:       #b07314;
+  --accent-bg:    #fdf3e3;
+  --accent-dark:  #7a4f0a;
+  --accent-btn:   #b07314;
+  --accent-btn-h: #8f5c0f;
+  --total-bg:     #fdf3e3;
+  --total-text:   #3d2600;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 28px 16px 48px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.container { max-width: 840px; margin: 0 auto; }
+
+/* ── ヘッダー ── */
+.page-header { text-align: center; margin-bottom: 28px; }
+.eyebrow {
+  font-size: 11px; letter-spacing: .14em; font-weight: 700;
+  color: var(--accent); text-transform: uppercase; margin-bottom: 8px;
+}
+.page-header h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+.page-header p  { font-size: 13px; color: var(--text-s); }
+
+/* ── レイアウト ── */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 680px) {
+  .layout { grid-template-columns: 1fr; }
+  .sticky { position: static !important; }
+}
+.sticky { position: sticky; top: 20px; }
+
+/* ── カード ── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 20px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+}
+.card-head {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 14px;
+}
+.card-head .icon {
+  width: 28px; height: 28px;
+  background: var(--accent-bg);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0;
+}
+.card-head .title { font-size: 15px; font-weight: 700; flex: 1; }
+.badge {
+  font-size: 10px; font-weight: 700;
+  background: var(--accent-bg); color: var(--accent);
+  padding: 2px 7px; border-radius: 4px; letter-spacing: .03em;
+}
+.opt-note { font-size: 12px; color: var(--text-h); margin-left: 4px; font-weight: 400; }
+
+/* ── 基本料金帯 ── */
+.base-band {
+  display: flex; justify-content: space-between; align-items: center;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: 10px 14px;
+}
+.base-band .desc  { font-size: 13px; color: var(--text-s); }
+.base-band .price { font-size: 16px; font-weight: 700; }
+
+/* ── 選択ボタン ── */
+.btn-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+  gap: 7px;
+}
+.opt-btn {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 10px 10px 9px;
+  cursor: pointer;
+  background: var(--bg-card);
+  color: var(--text);
+  text-align: left;
+  transition: border-color .13s, background .13s;
+  line-height: 1.35;
+}
+.opt-btn:hover { border-color: var(--border-h); background: var(--bg); }
+.opt-btn.active { border: 2px solid var(--accent); background: var(--accent-bg); color: var(--accent-dark); }
+.opt-btn .b-main { font-size: 13px; font-weight: 700; display: block; }
+.opt-btn .b-sub  { font-size: 11px; color: var(--text-h); display: block; margin-top: 2px; }
+.opt-btn .b-add  { font-size: 12px; font-weight: 700; color: var(--text-s); display: block; margin-top: 5px; }
+.opt-btn.active .b-sub { color: var(--accent); }
+.opt-btn.active .b-add { color: var(--accent); }
+
+/* ── エリア選択 ── */
+.sel-wrap { position: relative; }
+.sel-wrap select {
+  width: 100%; padding: 11px 38px 11px 12px;
+  border: 1px solid var(--border); border-radius: var(--r-md);
+  background: var(--bg-card); color: var(--text);
+  font-size: 14px; font-family: inherit;
+  appearance: none; cursor: pointer;
+  transition: border-color .13s;
+}
+.sel-wrap select:hover { border-color: var(--border-h); }
+.sel-wrap select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.sel-wrap::after {
+  content: ''; position: absolute; right: 14px; top: 50%;
+  transform: translateY(-50%);
+  border: 5px solid transparent; border-top: 6px solid var(--text-s);
+  pointer-events: none;
+}
+.area-note { font-size: 12px; color: var(--text-h); margin-top: 7px; min-height: 18px; }
+
+/* ── オプション ── */
+.chk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
+  gap: 7px;
+}
+.chk-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid var(--border); border-radius: var(--r-md);
+  cursor: pointer; user-select: none;
+  transition: border-color .13s, background .13s;
+}
+.chk-item:hover { border-color: var(--border-h); background: var(--bg); }
+.chk-item.checked { border: 2px solid var(--accent); background: var(--accent-bg); }
+.chk-item input {
+  margin-top: 2px; flex-shrink: 0;
+  width: 15px; height: 15px;
+  accent-color: var(--accent); cursor: pointer;
+}
+.chk-body { flex: 1; }
+.chk-label { font-size: 13px; font-weight: 700; }
+.chk-desc  { font-size: 11px; color: var(--text-h); margin-top: 1px; }
+.chk-price { font-size: 12px; font-weight: 700; color: var(--text-s); margin-top: 4px; }
+.chk-item.checked .chk-label { color: var(--accent-dark); }
+.chk-item.checked .chk-desc  { color: var(--accent); }
+.chk-item.checked .chk-price { color: var(--accent); }
+
+/* ── サマリー ── */
+.summary {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 18px; box-shadow: var(--shadow);
+}
+.sum-title {
+  font-size: 11px; font-weight: 700; letter-spacing: .1em;
+  color: var(--text-s); text-transform: uppercase; margin-bottom: 12px;
+}
+.sum-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 6px 0; border-bottom: 1px dashed var(--border); font-size: 12px;
+}
+.sum-row:last-of-type { border-bottom: none; }
+.sum-row .s-name { color: var(--text-s); flex: 1; padding-right: 8px; }
+.sum-row .s-val  { font-weight: 700; white-space: nowrap; }
+.sum-row.base .s-name, .sum-row.base .s-val { color: var(--text-h); }
+.sum-row.subtotal .s-name { font-weight: 700; color: var(--text); }
+.sum-row.subtotal .s-val  { font-weight: 700; }
+
+.total-block {
+  background: var(--total-bg);
+  border: 1px solid #f0ddb3;
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-top: 14px;
+}
+.total-lbl  { font-size: 13px; font-weight: 700; color: var(--accent-dark); }
+.total-note { font-size: 11px; color: var(--accent); margin-top: 1px; }
+.total-amt  {
+  font-size: 28px; font-weight: 700; color: var(--total-text);
+  transition: opacity .18s;
+}
+
+/* ── CTAボタン ── */
+.cta-wrap { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+.cta-primary {
+  display: block; width: 100%; padding: 13px;
+  background: var(--accent-btn); color: #fff;
+  border: none; border-radius: var(--r-md);
+  font-family: inherit; font-size: 14px; font-weight: 700;
+  cursor: pointer; text-align: center; text-decoration: none;
+  transition: background .14s; letter-spacing: .02em;
+}
+.cta-primary:hover { background: var(--accent-btn-h); }
+.cta-reset {
+  display: block; width: 100%; padding: 9px;
+  background: transparent; color: var(--text-s);
+  border: 1px solid var(--border); border-radius: var(--r-md);
+  font-family: inherit; font-size: 13px;
+  cursor: pointer; text-align: center;
+  transition: background .14s;
+}
+.cta-reset:hover { background: var(--bg); }
+
+/* ── 注記 ── */
+.footnote {
+  font-size: 11px; color: var(--text-h);
+  margin-top: 28px; text-align: center; line-height: 1.8;
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="page-header">
+    <p class="eyebrow">CREEM Studio</p>
+    <h1>民泊・短期賃貸 撮影料金 自動見積もり</h1>
+    <p>各項目を選択すると、料金がリアルタイムで計算されます。</p>
+  </header>
+
+  <div class="layout">
+
+    <!-- 左列 -->
+    <div>
+
+      <!-- 基本料金 -->
+      <div class="card">
+        <div class="card-head">
+          <div class="icon">📷</div>
+          <span class="title">基本料金</span>
+          <span class="badge">固定</span>
+        </div>
+        <div class="base-band">
+          <span class="desc">撮影1時間・納品10枚・レタッチ込み</span>
+          <span class="price">¥10,000</span>
+        </div>
+      </div>
+
+      <!-- 撮影時間 -->
+      <div class="card">
+        <div class="card-head">
+          <div class="icon">🕐</div>
+          <span class="title">撮影時間</span>
+          <span class="badge">必須</span>
+        </div>
+        <div class="btn-grid" id="time-grid"></div>
+      </div>
+
+      <!-- 納品枚数 -->
+      <div class="card">
+        <div class="card-head">
+          <div class="icon">🖼</div>
+          <span class="title">納品写真枚数</span>
+          <span class="badge">必須</span>
+        </div>
+        <div class="btn-grid" id="photo-grid"></div>
+      </div>
+
+      <!-- エリア -->
+      <div class="card">
+        <div class="card-head">
+          <div class="icon">📍</div>
+          <span class="title">撮影エリア（出張料金）</span>
+          <span class="badge">必須</span>
+        </div>
+        <div class="sel-wrap">
+          <select id="area-sel" aria-label="撮影エリアを選択">
+            <option value="">── エリアを選択してください ──</option>
+          </select>
+        </div>
+        <div class="area-note" id="area-note" aria-live="polite"></div>
+      </div>
+
+      <!-- オプション -->
+      <div class="card">
+        <div class="card-head">
+          <div class="icon">✚</div>
+          <span class="title">オプション</span>
+          <span class="opt-note">複数選択可</span>
+        </div>
+        <div class="chk-grid" id="opt-grid"></div>
+      </div>
+
+    </div>
+
+    <!-- 右列：サマリー -->
+    <aside class="sticky">
+      <div class="summary">
+        <div class="sum-title">見積もり金額（概算・税込）</div>
+        <div id="sum-rows" aria-live="polite"></div>
+        <div class="total-block">
+          <div>
+            <div class="total-lbl">合計（税込）</div>
+            <div class="total-note">消費税 10% 含む</div>
+          </div>
+          <div class="total-amt" id="total-amt">¥0</div>
+        </div>
+        <div class="cta-wrap">
+          <a href="#" class="cta-primary" id="cta-btn" target="_blank" rel="noopener">
+            この内容でお問い合わせ
+          </a>
+          <button class="cta-reset" onclick="resetAll()">リセット</button>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <p class="footnote">
+    ※ 上記はすべて概算です。物件の規模・アクセス状況により変動する場合があります。<br>
+    ※ ★印のオプション（Googleストリートビュー・Matterport・動画撮影）は事前にお打ち合わせをさせていただきます。<br>
+    ※ 交通費・駐車場代は別途実費をいただく場合があります。
+  </p>
+
+</div>
+<script>
+// ── データ定義 ──────────────────────────────────
+var BASE = 10000;
+
+var TIMES = [
+  { label:'1時間',  note:'～10枚目安',    add:0 },
+  { label:'2時間',  note:'20〜30枚目安',  add:5000 },
+  { label:'3時間',  note:'20〜50枚目安',  add:10000 },
+  { label:'4時間',  note:'30〜70枚目安',  add:15000 },
+  { label:'5時間',  note:'40〜90枚目安',  add:20000 },
+  { label:'6時間',  note:'50〜100枚目安', add:25000 },
+  { label:'7時間',  note:'',              add:30000 },
+  { label:'8時間',  note:'',              add:35000 },
+  { label:'9時間',  note:'',              add:40000 },
+  { label:'10時間', note:'',              add:45000 },
+  { label:'11時間', note:'',              add:50000 },
+  { label:'12時間', note:'',              add:55000 },
+  { label:'24時間', note:'',              add:115000 },
+];
+
+var PHOTOS = [
+  { label:'10枚まで', add:0 },
+  { label:'〜20枚',   add:6000 },
+  { label:'〜30枚',   add:10000 },
+  { label:'〜40枚',   add:14000 },
+  { label:'〜50枚',   add:17000 },
+  { label:'60枚',     add:19500 },
+  { label:'70枚',     add:22000 },
+  { label:'80枚',     add:24500 },
+  { label:'90枚',     add:28000 },
+  { label:'100枚',    add:30500 },
+];
+
+var AREAS = [
+  { label:'① 埼玉中部',              note:'川越・ふじみ野・鶴ヶ島・坂戸',          fee:10000 },
+  { label:'② 埼玉南部',              note:'所沢・和光・志木・朝霞・浦和・大宮',      fee:11000 },
+  { label:'③ 埼玉東部・北部',        note:'越谷・春日部・熊谷・深谷',               fee:13000 },
+  { label:'④ 東京23区（副都心・西部）', note:'池袋・新宿・渋谷・中野・練馬',        fee:12000 },
+  { label:'⑤ 東京23区（東部・湾岸）',  note:'千代田・台東・墨田・江東・品川',       fee:14000 },
+  { label:'⑥ 東京多摩エリア',        note:'立川・府中・八王子・調布',               fee:15000 },
+  { label:'⑦ 神奈川東部',            note:'川崎・横浜',                             fee:15000 },
+  { label:'⑧ 神奈川中〜西部',        note:'相模原・大和・厚木・小田原',             fee:17000 },
+  { label:'⑨ 千葉西部',              note:'松戸・市川・船橋・柏',                   fee:14000 },
+  { label:'⑩ 千葉中〜南部',          note:'千葉市・市原・館山',                     fee:17000 },
+  { label:'⑪ 群馬南部',              note:'高崎・前橋・伊勢崎',                     fee:15000 },
+  { label:'⑫ 山梨・群馬北部',        note:'甲府・都留・渋川・沼田',                 fee:18000 },
+];
+
+var OPTS = [
+  { label:'人物撮影',                    desc:'モデル手配別 / 撮影2時間〜',                  fee:5000 },
+  { label:'料理撮影',                    desc:'宿泊・店舗撮影向け',                          fee:5000 },
+  { label:'早朝撮影',                    desc:'日の出前後1時間',                             fee:5000 },
+  { label:'夜間撮影',                    desc:'日の入り以降の撮影',                          fee:4000 },
+  { label:'360度全方位写真撮影',         desc:'1ポイント（1か所）あたり',                    fee:2000 },
+  { label:'★Googleストリートビュー掲載', desc:'360度ビューをGoogleマップに掲載（最低5ポイント）', fee:12000 },
+  { label:'★Matterport 3D撮影',         desc:'タグ付け等は別途料金',                        fee:20000 },
+  { label:'★動画撮影',                  desc:'事前に詳細打ち合わせをさせていただきます',     fee:30000 },
+];
+
+// entry IDマッピング（Googleフォーム）
+// entry.935997392  → お問い合わせ内容
+// entry.523515710  → 法人名
+// entry.706058200  → お名前
+// entry.1614145593 → メールアドレス
+// entry.1742997694 → 電話番号
+// entry.1038321136 → WEBサイトのURL
+var FORM_BASE = 'https://docs.google.com/forms/d/e/1FAIpQLSc_I1u0y-Mc-fkclQBvjG9zPHXouUkZfrlWt4sDkZCevlIvww/viewform';
+
+// ── 状態 ─────────────────────────────────────────
+var selTime  = null;
+var selPhoto = null;
+var selArea  = null;
+var selOpts  = new Set();
+
+// ── ユーティリティ ─────────────────────────────────
+function fmt(n) { return '¥' + n.toLocaleString('ja-JP'); }
+function addLabel(n) { return n === 0 ? '基本料金に含む' : '+' + fmt(n); }
+
+// ── グリッド生成 ──────────────────────────────────
+function buildTimeGrid() {
+  var g = document.getElementById('time-grid');
+  TIMES.forEach(function(t, i) {
+    var b = document.createElement('button');
+    b.className = 'opt-btn';
+    b.setAttribute('type', 'button');
+    b.setAttribute('aria-pressed', 'false');
+    b.innerHTML =
+      '<span class="b-main">' + t.label + '</span>' +
+      '<span class="b-sub">'  + (t.note || '&nbsp;') + '</span>' +
+      '<span class="b-add">'  + addLabel(t.add) + '</span>';
+    b.addEventListener('click', function() {
+      selTime = i;
+      document.querySelectorAll('#time-grid .opt-btn').forEach(function(x, j) {
+        x.classList.toggle('active', j === i);
+        x.setAttribute('aria-pressed', j === i ? 'true' : 'false');
+      });
+      calc();
+    });
+    g.appendChild(b);
+  });
+}
+
+function buildPhotoGrid() {
+  var g = document.getElementById('photo-grid');
+  PHOTOS.forEach(function(p, i) {
+    var b = document.createElement('button');
+    b.className = 'opt-btn';
+    b.setAttribute('type', 'button');
+    b.setAttribute('aria-pressed', 'false');
+    b.innerHTML =
+      '<span class="b-main">' + p.label + '</span>' +
+      '<span class="b-add">'  + addLabel(p.add) + '</span>';
+    b.addEventListener('click', function() {
+      selPhoto = i;
+      document.querySelectorAll('#photo-grid .opt-btn').forEach(function(x, j) {
+        x.classList.toggle('active', j === i);
+        x.setAttribute('aria-pressed', j === i ? 'true' : 'false');
+      });
+      calc();
+    });
+    g.appendChild(b);
+  });
+}
+
+function buildAreaSelect() {
+  var sel = document.getElementById('area-sel');
+  AREAS.forEach(function(a, i) {
+    var o = document.createElement('option');
+    o.value = i;
+    o.textContent = a.label + '　' + fmt(a.fee);
+    sel.appendChild(o);
+  });
+  sel.addEventListener('change', function() {
+    selArea = sel.value === '' ? null : parseInt(sel.value, 10);
+    document.getElementById('area-note').textContent =
+      selArea !== null ? AREAS[selArea].note : '';
+    calc();
+  });
+}
+
+function buildOptGrid() {
+  var g = document.getElementById('opt-grid');
+  OPTS.forEach(function(o, i) {
+    var lbl = document.createElement('label');
+    lbl.className = 'chk-item';
+    lbl.setAttribute('for', 'opt-' + i);
+
+    var inp = document.createElement('input');
+    inp.type = 'checkbox';
+    inp.id   = 'opt-' + i;
+    inp.addEventListener('change', function() {
+      inp.checked ? selOpts.add(i) : selOpts.delete(i);
+      lbl.classList.toggle('checked', inp.checked);
+      calc();
+    });
+
+    var body = document.createElement('div');
+    body.className = 'chk-body';
+    body.innerHTML =
+      '<div class="chk-label">' + o.label + '</div>' +
+      '<div class="chk-desc">'  + o.desc  + '</div>' +
+      '<div class="chk-price">' + fmt(o.fee) + '</div>';
+
+    lbl.appendChild(inp);
+    lbl.appendChild(body);
+    g.appendChild(lbl);
+  });
+}
+
+// ── 計算・表示 ────────────────────────────────────
+function calc() {
+  var rows     = [];
+  var subtotal = BASE;
+
+  rows.push({ name:'基本料金（1時間・10枚込み）', val:BASE, cls:'base' });
+
+  if (selTime !== null && TIMES[selTime].add > 0) {
+    subtotal += TIMES[selTime].add;
+    rows.push({ name:'撮影時間　' + TIMES[selTime].label, val:TIMES[selTime].add });
+  }
+  if (selPhoto !== null && PHOTOS[selPhoto].add > 0) {
+    subtotal += PHOTOS[selPhoto].add;
+    rows.push({ name:'納品写真　' + PHOTOS[selPhoto].label, val:PHOTOS[selPhoto].add });
+  }
+  if (selArea !== null) {
+    subtotal += AREAS[selArea].fee;
+    rows.push({ name:'撮影エリア　' + AREAS[selArea].label, val:AREAS[selArea].fee });
+  }
+  selOpts.forEach(function(i) {
+    subtotal += OPTS[i].fee;
+    rows.push({ name:'オプション　' + OPTS[i].label, val:OPTS[i].fee });
+  });
+
+  var tax   = Math.round(subtotal * 0.1);
+  var total = subtotal + tax;
+
+  // サマリー行を描画
+  var el = document.getElementById('sum-rows');
+  el.innerHTML = '';
+  rows.forEach(function(r) {
+    var d = document.createElement('div');
+    d.className = 'sum-row' + (r.cls ? ' ' + r.cls : '');
+    d.innerHTML =
+      '<span class="s-name">' + r.name + '</span>' +
+      '<span class="s-val">'  + fmt(r.val) + '</span>';
+    el.appendChild(d);
+  });
+  if (rows.length > 1) {
+    var st = document.createElement('div');
+    st.className = 'sum-row subtotal';
+    st.innerHTML = '<span class="s-name">小計</span><span class="s-val">' + fmt(subtotal) + '</span>';
+    el.appendChild(st);
+    var tx = document.createElement('div');
+    tx.className = 'sum-row';
+    tx.innerHTML = '<span class="s-name">消費税（10%）</span><span class="s-val">' + fmt(tax) + '</span>';
+    el.appendChild(tx);
+  }
+
+  // 合計金額アニメーション
+  var ta = document.getElementById('total-amt');
+  ta.style.opacity = '0.3';
+  setTimeout(function() { ta.textContent = fmt(total); ta.style.opacity = '1'; }, 120);
+
+  // お問い合わせボタンのURLを更新
+  document.getElementById('cta-btn').href = buildFormUrl(total, subtotal, tax);
+}
+
+// ── Googleフォーム自動入力URL生成 ─────────────────
+function buildFormUrl(total, subtotal, tax) {
+  var lines = [];
+  lines.push('【撮影見積もりフォームより自動送信】');
+  lines.push('');
+  lines.push('■ 撮影時間　: ' + (selTime  !== null ? TIMES[selTime].label   : '未選択'));
+  lines.push('■ 納品写真　: ' + (selPhoto !== null ? PHOTOS[selPhoto].label : '未選択'));
+  lines.push('■ 撮影エリア: ' + (selArea  !== null ? AREAS[selArea].label   : '未選択'));
+
+  if (selOpts.size > 0) {
+    var ol = [];
+    selOpts.forEach(function(i) { ol.push(OPTS[i].label); });
+    lines.push('■ オプション: ' + ol.join('、'));
+  } else {
+    lines.push('■ オプション: なし');
+  }
+
+  lines.push('');
+  lines.push('小計　　　 : ' + fmt(subtotal));
+  lines.push('消費税(10%): ' + fmt(tax));
+  lines.push('合計（税込）: ' + fmt(total));
+  lines.push('');
+  lines.push('※上記は自動計算による概算です。');
+  lines.push('　物件の規模・アクセス状況により変動する場合があります。');
+
+  var content = lines.join('\n');
+
+  // entry.935997392 → お問い合わせ内容 のみ自動入力
+  // その他の欄はお客さんが直接入力
+  return FORM_BASE + '?usp=pp_url&entry.935997392=' + encodeURIComponent(content);
+}
+
+// ── リセット ──────────────────────────────────────
+function resetAll() {
+  selTime = null; selPhoto = null; selArea = null; selOpts = new Set();
+  document.querySelectorAll('.opt-btn').forEach(function(b) {
+    b.classList.remove('active');
+    b.setAttribute('aria-pressed', 'false');
+  });
+  document.querySelectorAll('.chk-item').forEach(function(l) {
+    l.classList.remove('checked');
+    l.querySelector('input').checked = false;
+  });
+  document.getElementById('area-sel').value = '';
+  document.getElementById('area-note').textContent = '';
+  calc();
+}
+
+// ── 初期化 ────────────────────────────────────────
+buildTimeGrid();
+buildPhotoGrid();
+buildAreaSelect();
+buildOptGrid();
+calc();
+</script>
+</body>
+</html>
